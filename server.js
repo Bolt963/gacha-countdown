@@ -226,9 +226,12 @@ function amsterdamIso(year, month, day, hour, minute) {
 function amsterdamOffset(date) {
   const parts = new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, timeZoneName: "shortOffset" }).formatToParts(date);
   const name = parts.find(p => p.type === "timeZoneName")?.value || "GMT+2";
-  const match = name.match(/GMT([+-]\d{1,2})(?::(\d{2}))?/);
+  const match = name.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/);
   if (!match) return "+02:00";
-  return `${match[1].padStart(3, match[1].startsWith("-") ? "-" : "+")}:${match[2] || "00"}`;
+  const sign = match[1];
+  const hours = String(Number(match[2])).padStart(2, "0");
+  const minutes = match[3] || "00";
+  return `${sign}${hours}:${minutes}`;
 }
 
 function scoreCandidate({ game, url, text, version, date }) {

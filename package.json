@@ -1,6 +1,6 @@
 {
   "name": "gacha-version-countdown-amsterdam",
-  "version": "1.1.0",
+  "version": "1.3.0",
   "description": "Amsterdam-time game version countdowns with a backend-powered Check new version button.",
   "type": "module",
   "scripts": {
