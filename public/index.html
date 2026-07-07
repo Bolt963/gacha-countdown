@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gacha Version Countdown — Amsterdam Time</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: rgba(255,255,255,.09);
+      --card-border: rgba(255,255,255,.16);
+      --text: #f7f7fb;
+      --muted: rgba(247,247,251,.72);
+      --accent: #9be7ff;
+      --good: #b9fbc0;
+      --warn: #ffd6a5;
+      --danger: #ffadad;
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+      --radius: 24px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(107, 92, 231, .38), transparent 35%),
+        radial-gradient(circle at 80% 20%, rgba(0, 206, 201, .25), transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(253, 121, 168, .22), transparent 35%),
+        var(--bg);
+      padding: 34px;
+    }
+    header, main, .notes { max-width: 1160px; margin-left: auto; margin-right: auto; }
+    header { margin-bottom: 26px; display: flex; justify-content: space-between; align-items: end; gap: 18px; }
+    .title h1 { margin: 0 0 8px; font-size: clamp(2rem, 5vw, 4.2rem); line-height: .95; letter-spacing: -0.06em; }
+    .title p { margin: 0; color: var(--muted); font-size: 1rem; max-width: 760px; }
+    .clock-pill { white-space: nowrap; background: rgba(255,255,255,.12); border: 1px solid var(--card-border); border-radius: 999px; padding: 12px 16px; color: var(--muted); backdrop-filter: blur(14px); }
+    main { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .card { position: relative; overflow: hidden; background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 22px; min-height: 350px; box-shadow: var(--shadow); backdrop-filter: blur(16px); }
+    .card::before { content: ""; position: absolute; inset: -60px auto auto -60px; width: 180px; height: 180px; background: var(--game-color, var(--accent)); opacity: .18; filter: blur(28px); border-radius: 999px; pointer-events: none; }
+    .topline { position: relative; display: flex; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+    .game h2 { margin: 0 0 4px; font-size: 1.35rem; letter-spacing: -.025em; }
+    .version { color: var(--muted); font-size: .94rem; }
+    .badge { height: fit-content; border: 1px solid rgba(255,255,255,.18); border-radius: 999px; padding: 6px 10px; font-size: .76rem; color: var(--muted); background: rgba(0,0,0,.12); }
+    .countdown { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 18px 0; }
+    .unit { border-radius: 18px; padding: 14px 8px; text-align: center; background: rgba(0,0,0,.18); border: 1px solid rgba(255,255,255,.10); }
+    .number { font-size: clamp(1.7rem, 5vw, 3.2rem); font-weight: 800; letter-spacing: -.06em; line-height: 1; font-variant-numeric: tabular-nums; }
+    .label { margin-top: 6px; color: var(--muted); font-size: .76rem; text-transform: uppercase; letter-spacing: .1em; }
+    .release-line { position: relative; color: var(--muted); line-height: 1.45; min-height: 44px; }
+    .release-line strong, .notes strong { color: var(--text); }
+    .editor { position: relative; margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: end; }
+    label { display: grid; gap: 6px; font-size: .78rem; color: var(--muted); }
+    input { width: 100%; border: 1px solid rgba(255,255,255,.16); border-radius: 14px; background: rgba(0,0,0,.22); color: var(--text); padding: 10px 12px; font: inherit; color-scheme: dark; }
+    button { border: 0; border-radius: 14px; padding: 11px 14px; background: rgba(255,255,255,.9); color: #0b1020; font-weight: 800; cursor: pointer; }
+    button:disabled { cursor: wait; opacity: .65; }
+    .secondary { background: transparent; color: var(--muted); border: 1px solid rgba(255,255,255,.16); }
+    .checker { position: relative; margin-top: 12px; display: grid; gap: 10px; }
+    .checker-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .proposal { display: none; background: rgba(0,0,0,.22); border: 1px solid rgba(255,255,255,.12); border-radius: 18px; padding: 12px; color: var(--muted); font-size: .88rem; line-height: 1.45; }
+    .proposal.visible { display: block; }
+    .proposal a { color: var(--accent); }
+    .proposal .headline { color: var(--text); font-weight: 800; margin-bottom: 5px; }
+    .proposal .warning { color: var(--warn); }
+    .notes { margin-top: 18px; color: var(--muted); font-size: .9rem; line-height: 1.5; background: rgba(255,255,255,.08); border: 1px solid var(--card-border); border-radius: 20px; padding: 18px 20px; backdrop-filter: blur(14px); }
+    .toolbar { max-width: 1160px; margin: 0 auto 18px; display: flex; gap: 10px; flex-wrap: wrap; }
+    @media (max-width: 900px) { body { padding: 22px; } header { align-items: start; flex-direction: column; } main { grid-template-columns: 1fr; } .editor { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <section class="title">
+      <h1>Version Countdown</h1>
+      <p>Five game countdowns pinned to Amsterdam time. Use “Check new version” to ask the local backend to search trusted sources, then confirm before updating.</p>
+    </section>
+    <aside class="clock-pill" id="amsterdamClock">Amsterdam time loading…</aside>
+  </header>
+
+  <section class="toolbar">
+    <button onclick="checkAll()">Check all games</button>
+    <button class="secondary" onclick="resetAll()">Reset all defaults</button>
+  </section>
+
+  <main id="cards"></main>
+
+  <section class="notes">
+    <strong>How automatic checking works:</strong> the button calls your local Node.js backend. The backend searches a small trusted-source list and a web-search fallback, extracts likely version/date/time candidates, and sends them back for review. It does not silently overwrite countdowns because official updates are sometimes posted as images, region-specific notices, or speculative guides.
+  </section>
+
+<script>
+const TIME_ZONE = "Europe/Amsterdam";
+const STORAGE_KEY = "gacha-countdowns-amsterdam-v2";
+
+const defaultGames = [
+  { id: "wuwa", name: "Wuthering Waves", shortName: "WuWa", version: "3.5", releaseISO: "2026-07-10T05:00:00+02:00", status: "Official maintenance end", color: "#7dd3fc", source: "Maintenance end converted from UTC+8 to Amsterdam time" },
+  { id: "nte", name: "Neverness to Everness", shortName: "NTE", version: "1.2 — 999 Nights", releaseISO: "2026-07-08T05:00:00+02:00", status: "Official maintenance end", color: "#f0abfc", source: "Maintenance end converted from UTC+8 to Amsterdam time" },
+  { id: "hsr", name: "Honkai: Star Rail", shortName: "HSR", version: "4.4", releaseISO: "2026-07-15T05:00:00+02:00", status: "Expected after maintenance", color: "#fde68a", source: "Release date confirmed; target time based on standard maintenance ending 11:00 UTC+8" },
+  { id: "endfield", name: "Arknights: Endfield", shortName: "Endfield", version: "1.4", releaseISO: "2026-07-16T05:00:00+02:00", status: "Speculative default", color: "#86efac", source: "Speculative default; check official source before relying on it" },
+  { id: "mongil", name: "Mongil: Star Dive", shortName: "Mongil", version: "1.2.0", releaseISO: "2026-07-08T05:00:00+02:00", status: "Speculative default", color: "#c4b5fd", source: "Estimated from current 6-week update-cycle reporting; check official source before relying on it" }
+];
+
+let games = loadGames();
+let proposals = {};
+
+function loadGames() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (Array.isArray(saved) && saved.length) return defaultGames.map(game => ({ ...game, ...(saved.find(s => s.id === game.id) || {}) }));
+  } catch (_) {}
+  return structuredClone(defaultGames);
+}
+function saveGames() { localStorage.setItem(STORAGE_KEY, JSON.stringify(games)); }
+function pad(num) { return String(num).padStart(2, "0"); }
+function escapeHtml(value) { return String(value).replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch])); }
+
+function fmtAmsterdam(date) {
+  return new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, weekday: "short", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZoneName: "short" }).format(date);
+}
+function toDateTimeLocalValue(iso) {
+  const d = new Date(iso);
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(d).reduce((acc, p) => (acc[p.type] = p.value, acc), {});
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
+}
+function amsterdamLocalToISO(localValue) {
+  const date = new Date(localValue + ":00");
+  const month = Number(localValue.slice(5, 7));
+  const offset = month >= 4 && month <= 10 ? "+02:00" : "+01:00";
+  return `${localValue}:00${offset}`;
+}
+
+function render() {
+  const cards = document.getElementById("cards");
+  cards.innerHTML = games.map(game => `
+    <article class="card" style="--game-color:${game.color}">
+      <div class="topline">
+        <div class="game">
+          <h2>${escapeHtml(game.name)}</h2>
+          <div class="version">Next version: <strong>${escapeHtml(game.version)}</strong></div>
+        </div>
+        <div class="badge">${escapeHtml(game.status)}</div>
+      </div>
+
+      <div class="countdown" aria-label="Countdown for ${escapeHtml(game.name)}">
+        <div class="unit"><div class="number" id="${game.id}-days">--</div><div class="label">Days</div></div>
+        <div class="unit"><div class="number" id="${game.id}-hours">--</div><div class="label">Hours</div></div>
+        <div class="unit"><div class="number" id="${game.id}-mins">--</div><div class="label">Mins</div></div>
+        <div class="unit"><div class="number" id="${game.id}-secs">--</div><div class="label">Secs</div></div>
+      </div>
+
+      <div class="release-line" id="${game.id}-release"></div>
+
+      <form class="editor" onsubmit="updateGame(event, '${game.id}')">
+        <label>Version
+          <input name="version" value="${escapeHtml(game.version)}" />
+        </label>
+        <label>Amsterdam release time
+          <input name="release" type="datetime-local" value="${toDateTimeLocalValue(game.releaseISO)}" />
+        </label>
+        <button type="submit">Save</button>
+        <button type="button" class="secondary" onclick="resetGame('${game.id}')">Reset default</button>
+      </form>
+
+      <section class="checker">
+        <div class="checker-row">
+          <button id="${game.id}-check" onclick="checkNewVersion('${game.id}')">Check new version</button>
+          <button class="secondary" onclick="openSources('${game.id}')">Open sources</button>
+        </div>
+        <div class="proposal" id="${game.id}-proposal"></div>
+      </section>
+    </article>
+  `).join("");
+  tick();
+  Object.entries(proposals).forEach(([id, result]) => showProposal(id, result));
+}
+
+function updateGame(event, id) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const game = games.find(g => g.id === id);
+  game.version = form.version.value.trim() || game.version;
+  game.releaseISO = amsterdamLocalToISO(form.release.value);
+  game.status = "Custom saved";
+  game.source = "Manually edited in browser";
+  saveGames(); render();
+}
+function resetGame(id) { games[games.findIndex(g => g.id === id)] = structuredClone(defaultGames.find(g => g.id === id)); delete proposals[id]; saveGames(); render(); }
+function resetAll() { games = structuredClone(defaultGames); proposals = {}; saveGames(); render(); }
+
+async function checkAll() {
+  for (const game of games) await checkNewVersion(game.id);
+}
+
+async function checkNewVersion(id) {
+  const button = document.getElementById(`${id}-check`);
+  const box = document.getElementById(`${id}-proposal`);
+  button.disabled = true;
+  button.textContent = "Checking…";
+  box.className = "proposal visible";
+  box.innerHTML = "Searching trusted sources and recent web results…";
+  try {
+    const response = await fetch(`/api/check/${encodeURIComponent(id)}`);
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Check failed");
+    proposals[id] = result;
+    showProposal(id, result);
+  } catch (err) {
+    box.innerHTML = `<span class="warning">Could not check automatically:</span> ${escapeHtml(err.message)}<br>Try opening sources and updating manually.`;
+  } finally {
+    button.disabled = false;
+    button.textContent = "Check new version";
+  }
+}
+
+function showProposal(id, result) {
+  const box = document.getElementById(`${id}-proposal`);
+  if (!box) return;
+  box.className = "proposal visible";
+  if (!result.best) {
+    box.innerHTML = `<div class="headline">No reliable update found</div><span class="warning">The backend searched, but could not extract a clear version/date.</span><br>${escapeHtml(result.warning || "")}`;
+    return;
+  }
+  const p = result.best;
+  box.innerHTML = `
+    <div class="headline">Found: ${escapeHtml(result.gameName)} ${escapeHtml(p.version)} · ${escapeHtml(p.status)}</div>
+    <div>Release target: <strong>${fmtAmsterdam(new Date(p.releaseISO))}</strong></div>
+    <div>Confidence score: ${p.confidence}</div>
+    <div>${escapeHtml(p.notes)}</div>
+    <div>Source: <a href="${escapeHtml(p.sourceUrl)}" target="_blank" rel="noreferrer">${escapeHtml(p.sourceTitle || p.sourceUrl)}</a></div>
+    <div class="warning">Review this before confirming. Automated parsing can be wrong.</div>
+    <div class="checker-row" style="margin-top:10px">
+      <button onclick="applyProposal('${id}')">Confirm update</button>
+      <button class="secondary" onclick="showAlternatives('${id}')">Show alternatives</button>
+    </div>
+  `;
+}
+
+function applyProposal(id) {
+  const result = proposals[id];
+  if (!result?.best) return;
+  const p = result.best;
+  const game = games.find(g => g.id === id);
+  game.version = p.version;
+  game.releaseISO = p.releaseISO;
+  game.status = p.status;
+  game.source = `${p.sourceTitle || "Source"}: ${p.sourceUrl}`;
+  saveGames(); render();
+}
+
+function showAlternatives(id) {
+  const result = proposals[id];
+  const box = document.getElementById(`${id}-proposal`);
+  if (!result?.proposals?.length) return;
+  box.innerHTML = `<div class="headline">Alternative candidates</div>` + result.proposals.map((p, index) => `
+    <div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,.12)">
+      <strong>${index + 1}. ${escapeHtml(p.version)}</strong> — ${fmtAmsterdam(new Date(p.releaseISO))}<br>
+      ${escapeHtml(p.status)} · confidence ${p.confidence}<br>
+      <a href="${escapeHtml(p.sourceUrl)}" target="_blank" rel="noreferrer">${escapeHtml(p.sourceTitle || p.sourceUrl)}</a><br>
+      <button style="margin-top:8px" onclick="chooseAlternative('${id}', ${index})">Use this candidate</button>
+    </div>
+  `).join("") + `<div class="checker-row" style="margin-top:10px"><button class="secondary" onclick="showProposal('${id}', proposals['${id}'])">Back</button></div>`;
+}
+
+function chooseAlternative(id, index) {
+  const result = proposals[id];
+  if (!result?.proposals?.[index]) return;
+  result.best = result.proposals[index];
+  showProposal(id, result);
+}
+
+function openSources(id) {
+  const map = {
+    wuwa: ["https://wutheringwaves.kurogames.com/en/main/news", "https://www.facebook.com/WutheringWaves.Official"],
+    nte: ["https://nte.perfectworld.com/en/news", "https://www.playnte.com/en/news"],
+    hsr: ["https://hsr.hoyoverse.com/en-us/news", "https://www.hoyolab.com/circles/6/39/feed?page_type=39&page_sort=events"],
+    endfield: ["https://endfield.hypergryph.com/en/news", "https://www.gryphline.com/en-us/endfield"],
+    mongil: ["https://forum.netmarble.com/stardive_gl/list/2/1", "https://stardive.netmarble.com/news", "https://mcompany.netmarble.com/en/news"]
+  };
+  (map[id] || []).forEach(url => window.open(url, "_blank", "noreferrer"));
+}
+
+function updateClock() {
+  document.getElementById("amsterdamClock").textContent = "Amsterdam: " + new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, weekday: "short", hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" }).format(new Date());
+}
+function tick() {
+  updateClock();
+  const now = new Date();
+  games.forEach(game => {
+    const release = new Date(game.releaseISO);
+    let diff = release - now;
+    const released = diff <= 0;
+    diff = Math.max(0, diff);
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins = Math.floor((diff % 3600000) / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
+    document.getElementById(`${game.id}-days`).textContent = days;
+    document.getElementById(`${game.id}-hours`).textContent = pad(hours);
+    document.getElementById(`${game.id}-mins`).textContent = pad(mins);
+    document.getElementById(`${game.id}-secs`).textContent = pad(secs);
+    document.getElementById(`${game.id}-release`).innerHTML = released
+      ? `<strong>${escapeHtml(game.shortName)} ${escapeHtml(game.version)}</strong> should be live. Release target was ${fmtAmsterdam(release)}.<br><span>${escapeHtml(game.source)}</span>`
+      : `Available around <strong>${fmtAmsterdam(release)}</strong>.<br><span>${escapeHtml(game.source)}</span>`;
+  });
+}
+
+render();
+setInterval(tick, 1000);
+</script>
+</body>
+</html>
